@@ -1,6 +1,7 @@
 import { dbClose, dbConnect } from "../database/dbConnect.js"
 import { CourseModel } from "../schema/course.js"
 import { EnrollmentModel } from "../schema/enrollment.js"
+import { ProgressModel } from "../schema/progress.js"
 import { UserModel } from "../schema/user.js"
 
 const enroll = async (req, res) => {
@@ -19,6 +20,7 @@ const enroll = async (req, res) => {
         await enrolled.save()
         course.students.push(user)
         await course.save()
+        await ProgressModel.create({ user_id: req.decode._id, course_id })
         res.status(200).json(enrolled)
 
     } catch (error) {
@@ -69,7 +71,6 @@ const get_course_enrollments = async (req, res) => {
         dbClose()
     }
 }
-
 
 const get_all_enrollments = async (req, res) => {
     try {

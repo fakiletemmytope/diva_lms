@@ -39,12 +39,11 @@ export const LessonModel = model('Lesson', LessonSchema)
 
 
 
-const LessonCompletionSchema = new Schema(
+const LessonProgressSchema = new Schema(
     {
         user_id: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
         lesson_id: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Lesson' },
-        course_id: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Course' },
-        isResourcesView: { type: Boolean, default: false },
+        isResourcesViewed: { type: Boolean, default: false },
         isQuizPassed: { type: Boolean, default: false },
         completedAt: { type: Date, default: Date.now },
         isCompleted: { type: Boolean, default: false }
@@ -52,6 +51,6 @@ const LessonCompletionSchema = new Schema(
     { timestamps: true }
 );
 
-LessonCompletionSchema.index({ user_id: 1, lesson_id: 1 }, { unique: true });
+LessonProgressSchema.index({ user_id: 1, lesson_id: 1 }, { unique: true });
 
-export const LessonCompletionModel = model('LessonCompletion', LessonCompletionSchema);
+export const LessonProgressModel = model('LessonProgress', LessonProgressSchema);

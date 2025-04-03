@@ -16,4 +16,11 @@ const CourseSchema = new Schema(
     { timestamps: true }
 )
 
+
+CourseSchema.post('save', async (doc) => {
+    const length = doc.lessons.length
+    doc.totalLessons = length
+    await doc.constructor.findByIdAndUpdate(doc._id, { totalLessons: length });
+});
+
 export const CourseModel = model('Course', CourseSchema)
