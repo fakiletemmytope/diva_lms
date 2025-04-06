@@ -7,6 +7,7 @@ import { enrollment_router } from "./routes/enrollment.js";
 import { lesson_router } from "./routes/lesson.js";
 import { analytics_router } from "./routes/analytics.js";
 import { quiz_router } from "./routes/quiz.js";
+import { instructor_router } from "./routes/instructor.js";
 
 const app = express()
 const base = "/api"
@@ -24,6 +25,7 @@ app.use(`${base}/enrollments`, enrollment_router)
 app.use(`${base}/lessons`, lesson_router)
 app.use("/analytics", analytics_router)
 app.use(`${base}/quizzes`, quiz_router)
+app.use(`${base}/instructors`, instructor_router)
 app.get("/", (req, res) => {
     // res.redirect("https://documenter.getpostman.com/view/16249004/2sAYXEFJX2")
     res.redirect("https://documenter.getpostman.com/view/16249004/2sAYdcsCkn")

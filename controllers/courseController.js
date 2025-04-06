@@ -3,6 +3,7 @@ import { dbClose, dbConnect } from "../database/dbConnect.js"
 import { course_router } from "../routes/course.js"
 import { CourseModel } from "../schema/course.js"
 import { UserModel } from "../schema/user.js"
+import { InstructorModel } from "../schema/instructor.js"
 
 const get_courses = async (req, res) => {
     try {
@@ -60,9 +61,11 @@ const create_course = async (req, res) => {
         const savedCourse = await CourseModel.create({
             title, description, price, duration, instructor
         })
-        const user = await UserModel.findById(req.decode._id)
-        user.courses.push(savedCourse)
-        await user.save()
+        await InstructorModel.findOneAndUpdate(
+            { userId: instructor },
+            { $addToSet: { courses: savedCourse._id } },
+            { upsert: true, new: true }
+        )
         res.status(200).json(savedCourse)
     } catch (err) {
         res.status(400).send(err.message)

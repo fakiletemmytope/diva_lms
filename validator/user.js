@@ -8,7 +8,7 @@ export const userCreate = Joi.object(
         password: Joi.string().pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[*.,()@/])[a-zA-Z0-9*.,()@/]{8,}$')).required(),
         email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required(),
         bio: Joi.string(),
-        userType: Joi.string().valid('admin', 'student', 'instructor')
+        userType: Joi.string().valid('admin', 'student')
     }
 )
 

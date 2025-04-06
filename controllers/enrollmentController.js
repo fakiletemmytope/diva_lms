@@ -12,16 +12,15 @@ const enroll = async (req, res) => {
         const course = await CourseModel.findById(course_id)
         const user = await UserModel.findById(student_id)
         if (!course) return res.status(404).send("Course not found")
-        const enroll = new EnrollmentModel(
-            { user: student_id }
+        const enroll = await EnrollmentModel.findOneAndUpdate(
+            { user: student_id },
+            { $push: { courses: course_id } },
+            { upsert: true, new: true }
         )
-        const enrolled = await enroll.save()
-        enrolled.courses.push(course)
-        await enrolled.save()
         course.students.push(user)
         await course.save()
         await ProgressModel.create({ user_id: req.decode._id, course_id })
-        res.status(200).json(enrolled)
+        res.status(200).json(enroll)
 
     } catch (error) {
         console.log(error)
@@ -36,7 +35,7 @@ const get_course_enrollments = async (req, res) => {
     const course_id = req.params.courseId
     const role = req.decode.userType
     try {
-        let enrollment = null // Initialize to null
+        let enrollment = null
         if (role === "admin") {
             await dbConnect();
             const course = await CourseModel.findById(course_id).populate("students")

@@ -34,10 +34,7 @@ const UserSchema = new Schema(
             enum: Object.values(Status),
             required: true,
             default: Status.INACTIVE
-        },
-        courses: [
-            { type: mongoose.Schema.Types.ObjectId, ref: 'Course' }
-        ],
+        }
         //resetPasswordToken: { type: String, default: null }, // For password reset functionality
         //resetPasswordExpires: { type: Date, default: null }, // Token expiration
         //lastLogin: { type: Date, default: null } // Track login activity

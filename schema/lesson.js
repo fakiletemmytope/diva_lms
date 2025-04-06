@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import { ProgressModel } from "./progress.js";
 
 const { Schema, model } = mongoose
 
@@ -52,5 +53,21 @@ const LessonProgressSchema = new Schema(
 );
 
 LessonProgressSchema.index({ user_id: 1, lesson_id: 1 }, { unique: true });
+
+LessonProgressSchema.post('findOneAndUpdate', async (doc) => {
+    //todo: update the course progress
+    const { isResourcesViewed, isQuizPassed, user_id, lesson_id, isCompleted } = doc;
+
+    if (isResourcesViewed && isQuizPassed && !isCompleted) {
+        await doc.constructor.updateOne({ _id: doc._id, isCompleted: { $ne: true } }, { isCompleted: true })
+        const lesson = await LessonModel.findById(lesson_id)
+        const progress = await ProgressModel.findOneAndUpdate(
+            { user_id: user_id, course_id: lesson.course_id },
+            { $push: { completedLessons: lesson_id } },
+            { new: true }
+        )
+    }
+
+})
 
 export const LessonProgressModel = model('LessonProgress', LessonProgressSchema);

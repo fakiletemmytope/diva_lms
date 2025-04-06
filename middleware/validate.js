@@ -1,6 +1,7 @@
 import { auth_validator } from "../validator/auth.js"
 import { course_create, course_update } from "../validator/course.js"
 import { lessonCreate, lessonUpdate } from "../validator/lesson.js"
+import { quizCreate, quizUpdate } from "../validator/quiz.js"
 import { userCreate, userUpdate } from "../validator/user.js"
 
 export const validate_userCreate = async (req, res, next) => {
@@ -40,3 +41,16 @@ export const validate_lessonUpdate = async (req, res, next) => {
     const { error } = lessonUpdate.validate(req.body, { abortEarly: false })
     error ? res.status(422).json(error.details) : next()
 }
+
+
+export const validate_quizCreate = async (req, res, next) => {
+    const { error } = quizCreate.validate(req.body, { abortEarly: false })
+    error ? res.status(422).json(error.details) : next()
+}
+
+
+export const validate_quizUpdate = async (req, res, next) => {
+    const { error } = quizUpdate.validate(req.body, { abortEarly: false })
+    error ? res.status(422).json(error.details) : next()
+}
+

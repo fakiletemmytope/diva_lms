@@ -25,18 +25,12 @@ const get_lessons = async (req, res) => {
 
             if (enrolled.length > 0) {
                 const lessonPromises = enrolled.map(async (e) => {
-                    const course = e.course;
+                    const course = e.courses;
                     const lesson = await LessonModel.find({ course_id: course });
-                    console.log(lesson)
                     lessons.push(...lesson)
-                    // return lesson
                 })
 
-                const lessonResults = await Promise.all(lessonPromises);
-
-                // lessonResults.forEach(lessonArray => {
-                //     lessons.push(...lessonArray);
-                // });
+                await Promise.all(lessonPromises);
             }
             res.status(200).json(lessons)
         }
