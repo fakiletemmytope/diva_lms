@@ -8,10 +8,10 @@ import { lesson_router } from "./routes/lesson.js";
 import { analytics_router } from "./routes/analytics.js";
 import { quiz_router } from "./routes/quiz.js";
 import { instructor_router } from "./routes/instructor.js";
+import { payment_router } from "./routes/payment.js";
 
 const app = express()
 const base = "/api"
-
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -26,10 +26,9 @@ app.use(`${base}/lessons`, lesson_router)
 app.use("/analytics", analytics_router)
 app.use(`${base}/quizzes`, quiz_router)
 app.use(`${base}/instructors`, instructor_router)
+app.use(`${base}/verify`, payment_router);
 app.get("/", (req, res) => {
-    // res.redirect("https://documenter.getpostman.com/view/16249004/2sAYXEFJX2")
-    res.redirect("https://documenter.getpostman.com/view/16249004/2sAYdcsCkn")
-
+    res.redirect("https://documenter.getpostman.com/view/16249004/2sB2ca5yj2")
 })
 
 export default app

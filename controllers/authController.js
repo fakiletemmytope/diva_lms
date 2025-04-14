@@ -19,7 +19,7 @@ export const login = async (req, res) => {
         }
         else {
             const { _id, first_name, last_name, email, userType } = user
-            const token = await getToken({ first_name, last_name, _id, userType })
+            const token = await getToken({ first_name, last_name, _id, userType, email })
             res.status(200).json({ _id, first_name, last_name, email, token, userType })
         }
 

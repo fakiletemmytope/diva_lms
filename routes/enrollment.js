@@ -8,8 +8,5 @@ const router = Router()
 router.post("/:courseId", authenticate, isStudent, enroll)
 router.get("/:courseId", authenticate, isAdminOrInstructor, get_course_enrollments)
 router.get("/", authenticate, isAdmin, get_all_enrollments)
-// router.get("/")
-
-
 
 export const enrollment_router = router

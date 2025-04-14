@@ -1,27 +1,31 @@
 import { dbClose, dbConnect } from "../database/dbConnect.js"
 import { CourseModel } from "../schema/course.js"
 import { EnrollmentModel } from "../schema/enrollment.js"
+import { PaymentModel } from "../schema/payment.js"
 import { ProgressModel } from "../schema/progress.js"
-import { UserModel } from "../schema/user.js"
+import { generatePayment } from "../utils/payment.js"
 
 const enroll = async (req, res) => {
     const course_id = req.params.courseId
-    const student_id = req.decode._id
+    const user_id = req.decode._id
+    const user_email = req.decode.email
     try {
         await dbConnect()
+        const enrolled = await EnrollmentModel.findOne({
+            user: user_id,
+            courses: { $in: [course_id] }
+        })
+        if (enrolled) return res.status(404).send("User already enrolled for this course")
         const course = await CourseModel.findById(course_id)
-        const user = await UserModel.findById(student_id)
         if (!course) return res.status(404).send("Course not found")
-        const enroll = await EnrollmentModel.findOneAndUpdate(
-            { user: student_id },
-            { $push: { courses: course_id } },
-            { upsert: true, new: true }
-        )
-        course.students.push(user)
-        await course.save()
-        await ProgressModel.create({ user_id: req.decode._id, course_id })
-        res.status(200).json(enroll)
 
+        //Todo: implement payment
+        const amount = 5000
+        const reference = `${user_id}-${course_id}-${Date.now()}`
+        const { response, error } = await generatePayment(user_email, amount, reference)
+        if (error) return res.status(400).json(error)
+        await PaymentModel.create({ course_id, user_id, reference, amount })
+        res.status(200).json(response.data)
     } catch (error) {
         console.log(error)
         res.status(400).send(error.message)
@@ -35,35 +39,13 @@ const get_course_enrollments = async (req, res) => {
     const course_id = req.params.courseId
     const role = req.decode.userType
     try {
-        let enrollment = null
-        if (role === "admin") {
-            await dbConnect();
-            const course = await CourseModel.findById(course_id).populate("students")
-            enrollment = {
-                id: course.id,
-                students: course.students.map(student => ({
-                    _id: student._id,
-                    first_name: student.first_name,
-                    last_name: student.last_name,
-                    email: student.email
-                }))
-            }
-        } else if (role === "instructor") {
-            await dbConnect();
-            const course = await CourseModel.findOne({ _id: course_id, instructor: req.decode._id }).populate("students");
-            const enrollment = {
-                id: course.id,
-                students: course.students.map(student => ({
-                    _id: student._id,
-                    first_name: student.first_name,
-                    last_name: student.last_name,
-                    email: student.email
-                }))
-            }
-            if (!enrollment) return res.status(403).json({ message: "Unauthorized User" })
-        }
-
-        res.status(200).json(enrollment);
+        await dbConnect();
+        const enrollment = await EnrollmentModel
+            .find({ courses: { $in: [course_id] } })
+            .populate({ path: "user", select: "-email -password -createdAt -updatedAt -courses" })
+        const course = await CourseModel.findOne({ _id: course_id, instructor: req.decode._id })
+        if (role === "admin" || (role === "instructor" && course)) res.status(200).json(enrollment)
+        else res.status(403).json({ message: "Unauthorized User" })
     } catch (error) {
         res.status(400).send(error.message)
     } finally {
@@ -72,22 +54,10 @@ const get_course_enrollments = async (req, res) => {
 }
 
 const get_all_enrollments = async (req, res) => {
+    const user = req.query.user_id
     try {
         await dbConnect()
-        const courses = await CourseModel.find({}).populate("students")
-        const enrollments = []
-        courses.map((course) => {
-            const enrollment = {
-                id: course.id,
-                students: course.students.map(student => ({
-                    _id: student._id,
-                    first_name: student.first_name,
-                    last_name: student.last_name,
-                    email: student.email
-                }))
-            }
-            enrollments.push(enrollment)
-        })
+        const enrollments = !user ? await EnrollmentModel.find({}) : await EnrollmentModel.find({ user: user })
         res.status(200).json(enrollments)
     } catch (error) {
         res.status(400).send(error.message)

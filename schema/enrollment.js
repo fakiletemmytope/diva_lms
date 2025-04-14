@@ -10,6 +10,6 @@ const EnrollmentSchema = new Schema(
     { timestamps: true }
 )
 
-EnrollmentSchema.index({ courses: 1, user: 1 }, { unique: true });
+EnrollmentSchema.index({ user: 1 }, { unique: true })
 
 export const EnrollmentModel = model('Enrollment', EnrollmentSchema)

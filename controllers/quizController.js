@@ -4,19 +4,40 @@ import { LessonModel } from "../schema/lesson.js"
 import { QuizModel, QuizSubmissionModel } from "../schema/quiz.js"
 
 
-export const get_quiz = async () => {
-
+export const get_quiz = async (req, res) => {
+    const id = req.params.id
+    try {
+        await dbConnect()
+        const quiz = await QuizModel.findById(id)
+        if (!quiz) return res.status(404).send("Quiz not found")
+        if (req.decode.userType === "admin" || (req.decode.userType === "instructor" && req.decode._id === quiz.instructor_id.toString())) res.status(200).json(quiz)
+        else {
+            //check if the user is a student and enrolled for the course 
+            const lesson = await LessonModel.findById(quiz.lesson_id)
+            const enrolled = await EnrollmentModel.findOne({
+                user: req.decode._id,
+                courses: { $in: [lesson.course_id] }
+            })
+            if (enrolled) res.status(200).json(quiz)
+            else res.status(400).send("User not allowed to perform this action")
+        }
+    }
+    catch (error) {
+        res.status(500).send(error.message)
+    } finally {
+        await dbClose()
+    }
 }
 
 export const create_quiz = async (req, res) => {
-    const { title, lesson_id, questions, totalPoints, timeLimit, instructions } = req.body
+    const { title, lesson_id, questions, totalPoints, timeLimit, instructions, quiz_type } = req.body
     const instructor_id = req.decode._id
     try {
         await dbConnect()
         const lesson = await LessonModel.findById(lesson_id)
         if (!lesson) return res.status(404).send("lesson not found")
         if (lesson.instructor_id.toString() !== instructor_id) return res.status(403).send("This user is not allowed to create quiz for this lesson")
-        const quiz = await QuizModel.create({ title, lesson_id, questions, totalPoints, timeLimit, instructor_id })
+        const quiz = await QuizModel.create({ title, lesson_id, questions, totalPoints, quiz_type, timeLimit, instructions, instructor_id })
         res.status(201).json(quiz)
     } catch (error) {
         res.status(500).send(error.message)
